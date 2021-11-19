@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func createMockCircuitBreaker(isFailure bool) Circuit {
@@ -48,8 +49,26 @@ func TestCircuitBreakerBreakerResponse(t *testing.T) {
 		_, _ = mockCircuit(ctx)
 	}
 
+	for i := 0; i < 3; i++ {
+		res, err := mockCircuit(ctx)
+		assert.NotNil(t, err)
+		assert.Equal(t, "service unreachable", err.Error())
+		assert.Equal(t, "", res)
+	}
+}
+
+// Assert that circuit breaker will let the program flow if a retry comes after the 2-second threshold
+func TestCircuitBreakerResponseAfterTimeout(t *testing.T) {
+	mockCircuit := createMockCircuitBreaker(true)
+	ctx := context.Background()
+
+	for i := 0; i < 5; i++ {
+		_, _ = mockCircuit(ctx)
+	}
+
+	time.Sleep(time.Second * 2)
+	mockCircuit = createMockCircuitBreaker(false)
 	res, err := mockCircuit(ctx)
-	assert.NotNil(t, err)
-	assert.Equal(t, "service unreachable", err.Error())
-	assert.Equal(t, "", res)
+	assert.Nil(t, err)
+	assert.Equal(t, "ok", res)
 }
