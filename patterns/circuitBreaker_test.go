@@ -67,8 +67,6 @@ func TestCircuitBreakerResponseAfterTimeout(t *testing.T) {
 	}
 
 	time.Sleep(time.Second * 2)
-	mockCircuit = createMockCircuitBreaker(false)
-	res, err := mockCircuit(ctx)
-	assert.Nil(t, err)
-	assert.Equal(t, "ok", res)
+	_, err := mockCircuit(ctx)
+	assert.Equal(t, "service error", err.Error())
 }

@@ -1,4 +1,4 @@
-module cloud-native
+module github.com/pandulaDW/cloud-native-patterns
 
 go 1.17
 
